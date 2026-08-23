@@ -1,6 +1,8 @@
 #include "ctelegram/crc16.h"
 #include "ctelegram/telegram.h"
 
+namespace crossctl { int selftest_statemachine(); }
+
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -86,6 +88,8 @@ static int selftest()
     size_t small_len = 0;
     check("encode into small buffer",
           tg_encode(&tx, wire, 4, &small_len) == TG_ERR_OVERFLOW);
+
+    failures += crossctl::selftest_statemachine();
 
     std::printf("\n%s (%d failure(s))\n",
                 failures ? "SELFTEST FAILED" : "SELFTEST OK", failures);
