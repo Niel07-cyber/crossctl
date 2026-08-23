@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.profile }} (gcc, x86_64)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [release, debug, asan, ubsan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          gcc --version | head -1
+          g++ --version | head -1
+          make --version | head -1
+          python3 --version
+
+      - name: Build (${{ matrix.profile }})
+        run: make PROFILE=${{ matrix.profile }} all
+
+      - name: Unit selftest
+        run: make PROFILE=${{ matrix.profile }} selftest
+
+      - name: Integration suite
+        run: make PROFILE=${{ matrix.profile }} test
+
+  static-analysis:
+    name: static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y cppcheck shellcheck
+
+      - name: cppcheck
+        run: |
+          cppcheck --enable=warning,style,performance,portability \
+                   --error-exitcode=1 \
+                   --inline-suppr \
+                   --suppress=missingIncludeSystem \
+                   -Iinclude clib/ src/
+
+      - name: shellcheck
+        run: shellcheck -x tests/run.sh tests/lib/harness.sh tests/cases/*.sh
+
+  container:
+    name: container (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: |
+          docker build --platform ${{ matrix.platform }} \
+                       -f docker/Dockerfile -t crossctl:ci .
+
+      - name: Run suite in container
+        run: docker run --rm --platform ${{ matrix.platform }} crossctl:ci
