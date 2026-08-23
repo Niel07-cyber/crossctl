@@ -124,6 +124,10 @@ int run_server(const ServerConfig &cfg)
 
             // Drain every complete frame currently buffered.
             for (;;) {
+                // data() on an empty vector may be nullptr, which the decoder
+                // reports as OVERFLOW. Nothing buffered means nothing to do.
+                if (acc.empty()) break;
+
                 tg_frame_t f;
                 size_t consumed = 0;
                 tg_status_t st = tg_decode(acc.data(), acc.size(), &f, &consumed);
