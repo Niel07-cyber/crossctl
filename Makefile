@@ -9,7 +9,7 @@ C_SRC   := $(wildcard clib/*.c)
 CXX_SRC := $(wildcard src/*.cpp)
 OBJ     := $(C_SRC:%.c=$(BUILD)/%.o) $(CXX_SRC:%.cpp=$(BUILD)/%.o)
 
-.PHONY: all clean selftest
+.PHONY: all clean selftest test
 
 all: $(BIN)
 
@@ -27,6 +27,9 @@ $(BUILD)/%.o: %.cpp
 
 selftest: $(BIN)
 	./$(BIN) --selftest
+
+test: $(BIN)
+	@tests/run.sh $(CASE)
 
 clean:
 	rm -rf $(BUILD)

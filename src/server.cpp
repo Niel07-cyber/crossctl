@@ -2,6 +2,7 @@
 #include "ctelegram/telegram.h"
 
 #include <arpa/inet.h>
+#include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstring>
@@ -63,8 +64,16 @@ bool send_frame(int fd, uint8_t type, uint16_t seq, const std::string &body)
 
 int run_server(const ServerConfig &cfg)
 {
-    std::signal(SIGINT,  on_signal);
-    std::signal(SIGTERM, on_signal);
+    // sigaction without SA_RESTART: blocking accept()/recv() must return
+    // EINTR so the shutdown flag is actually observed. Plain signal() has
+    // restart semantics on BSD/macOS and would hang here.
+    struct sigaction sa;
+    std::memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = on_signal;
+    sa.sa_flags   = 0;
+    sigemptyset(&sa.sa_mask);
+    ::sigaction(SIGINT,  &sa, nullptr);
+    ::sigaction(SIGTERM, &sa, nullptr);
     std::signal(SIGPIPE, SIG_IGN);
 
     int listen_fd = ::socket(AF_INET, SOCK_STREAM, 0);
@@ -99,6 +108,7 @@ int run_server(const ServerConfig &cfg)
         int fd = ::accept(listen_fd, nullptr, nullptr);
         if (fd < 0) {
             if (g_stop) break;
+            if (errno == EINTR) continue;
             continue;
         }
         std::fprintf(stderr, "client connected\n");
