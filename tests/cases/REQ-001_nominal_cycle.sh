@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # REQ-001: A full crossing cycle returns the barrier to the raised position.
+# shellcheck source=tests/lib/harness.sh
 source "$(dirname "$0")/../lib/harness.sh"
 
 ctl_start || exit 1

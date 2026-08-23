@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # REQ-002: The signal shall never show CLEAR while the crossing is not idle.
+# shellcheck source=tests/lib/harness.sh
 source "$(dirname "$0")/../lib/harness.sh"
 
 ctl_start || exit 1

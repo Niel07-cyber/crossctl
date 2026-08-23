@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # REQ-010: Frames failing CRC validation shall be rejected, not acted upon.
+# shellcheck source=tests/lib/harness.sh
 source "$(dirname "$0")/../lib/harness.sh"
 
 ctl_start || exit 1

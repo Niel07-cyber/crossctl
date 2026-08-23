@@ -5,8 +5,6 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BIN="${BIN:-$ROOT/build/crossctl}"
-MKFRAME="$ROOT/tests/lib/mkframe.py"
-DECODE="$ROOT/tests/lib/decode.py"
 
 PASS=0
 FAIL=0
@@ -18,7 +16,8 @@ free_port() {
   python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1]);s.close()'
 }
 
-# ctl_start [--timeout N]
+# ctl_start [--timeout N]  — extra args are forwarded to the binary.
+# shellcheck disable=SC2120  # optional args; bare calls are valid
 ctl_start() {
   CTL_PORT="$(free_port)"
   CTL_LOG="$(mktemp -t crossctl.XXXXXX)"
