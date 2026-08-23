@@ -36,6 +36,7 @@ product, and it carries no safety certification.
 | `make check` | all profiles, as CI runs them |
 | `make docker-test` | suite inside Debian container |
 | `make docker-test-amd64` | same, x86_64 under emulation |
+| `make release` | versioned artifact, gated on the suite passing |
 
 ## Protocol
 
@@ -64,7 +65,14 @@ make test CASE=REQ-010   # one case
 ./build/release/crossctl --serve --port 8042
 ```
 
+## Release
+
+`make release` builds, runs the selftest and the full integration suite, then
+packages a versioned tarball containing the binary, release notes recording
+commit and toolchain, user and production manuals, and a SHA-256 manifest.
+Packaging aborts if any test fails.
+
 ## Status
 
-Work in progress. Next: expanded suite, parameter files with validation,
-release packaging.
+13 requirement-tagged integration cases, 39 unit checks, clean under
+AddressSanitizer, UndefinedBehaviorSanitizer, cppcheck and shellcheck.
