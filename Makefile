@@ -51,7 +51,7 @@ OBJ     := $(C_SRC:%.c=$(BUILD)/%.o) $(CXX_SRC:%.cpp=$(BUILD)/%.o)
 
 .PHONY: all clean selftest test check \
         debug asan ubsan test-asan test-ubsan \
-        docker-build docker-test docker-test-amd64 docker-shell
+        docker-build docker-test docker-test-amd64 docker-shell release
 
 all: $(BIN)
 	@echo "built $(BIN) [profile: $(PROFILE)]"
@@ -110,5 +110,8 @@ docker-test-amd64:
 docker-shell: docker-build
 	docker run --rm -it crossctl:dev bash
 
+release:
+	@scripts/release.sh
+
 clean:
-	rm -rf build
+	rm -rf build dist
