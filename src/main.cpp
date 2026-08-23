@@ -1,5 +1,8 @@
 #include "ctelegram/crc16.h"
 #include "ctelegram/telegram.h"
+#include "crossctl/server.h"
+
+#include <cstdlib>
 
 namespace crossctl { int selftest_statemachine(); }
 
@@ -105,6 +108,17 @@ int main(int argc, char **argv)
     if (argc > 1 && std::strcmp(argv[1], "--selftest") == 0) {
         return selftest() == 0 ? 0 : 1;
     }
-    std::printf("crossctl %s — try --version or --selftest\n", kVersion);
+    if (argc > 1 && std::strcmp(argv[1], "--serve") == 0) {
+        crossctl::ServerConfig cfg;
+        for (int i = 2; i + 1 < argc; i += 2) {
+            if (std::strcmp(argv[i], "--port") == 0) {
+                cfg.port = static_cast<uint16_t>(std::atoi(argv[i + 1]));
+            } else if (std::strcmp(argv[i], "--timeout") == 0) {
+                cfg.move_timeout = static_cast<uint32_t>(std::atoi(argv[i + 1]));
+            }
+        }
+        return crossctl::run_server(cfg);
+    }
+    std::printf("crossctl %s — try --version, --selftest or --serve\n", kVersion);
     return 0;
 }
